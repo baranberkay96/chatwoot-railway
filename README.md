@@ -1,6 +1,6 @@
 # Deploy and Host Chatwoot with Railway
 
-[![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/deploy/chatwoot-v4-omnichannel-support-desk)
+[![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/deploy/chatwoot-v4-omnichannel-support-desk?referralCode=20H68q)
 
 Chatwoot is an open-source customer support platform that brings website live chat, email, WhatsApp, Facebook, Instagram, Telegram and other channels into one shared team inbox. This community template runs Chatwoot v4 on Railway with a separate Sidekiq worker, PostgreSQL with pgvector, Redis and a Railway Bucket for attachments.
 
