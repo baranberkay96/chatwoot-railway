@@ -1,0 +1,422 @@
+{
+  "name": "Chatwoot v4 Omnichannel Support Desk",
+  "description": "Live chat, email, WhatsApp Cloud API and social inbox with AI assist and workers.",
+  "category": "Automation",
+  "tags": [
+    "chatwoot",
+    "customer-support",
+    "live-chat",
+    "helpdesk",
+    "omnichannel",
+    "intercom-alternative"
+  ],
+  "services": {
+    "chatwoot": {
+      "icon": "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/chatwoot.svg",
+      "source": {
+        "repo": "baranberkay96/chatwoot-railway",
+        "rootDirectory": "/services/chatwoot"
+      },
+      "preDeployCommand": [
+        "/app/railway/predeploy.sh"
+      ],
+      "startCommand": "/app/railway/web.sh",
+      "healthcheckPath": "/api",
+      "healthcheckTimeout": 300,
+      "restartPolicyType": "ON_FAILURE",
+      "restartPolicyMaxRetries": 10,
+      "numReplicas": 1,
+      "publicDomain": true,
+      "targetPort": 3000,
+      "tcpProxy": null,
+      "volume": null,
+      "variables": {
+        "POSTGRES_HOST": {
+          "defaultValue": "${{Postgres.RAILWAY_PRIVATE_DOMAIN}}",
+          "description": "Postgres (pgvector) host, private network.",
+          "required": true
+        },
+        "POSTGRES_PORT": {
+          "defaultValue": "5432",
+          "description": "Postgres port.",
+          "required": false
+        },
+        "POSTGRES_USERNAME": {
+          "defaultValue": "${{Postgres.PGUSER}}",
+          "description": "Postgres user.",
+          "required": true
+        },
+        "POSTGRES_PASSWORD": {
+          "defaultValue": "${{Postgres.PGPASSWORD}}",
+          "description": "Postgres password.",
+          "required": true
+        },
+        "POSTGRES_DATABASE": {
+          "defaultValue": "${{Postgres.PGDATABASE}}",
+          "description": "Chatwoot database.",
+          "required": true
+        },
+        "REDIS_URL": {
+          "defaultValue": "${{Redis.REDIS_URL}}",
+          "description": "Redis for Sidekiq queues, Action Cable and caching.",
+          "required": true
+        },
+        "ACTIVE_STORAGE_SERVICE": {
+          "defaultValue": "s3_compatible",
+          "description": "Attachments/avatars in the Railway Bucket so web and Sidekiq see the same files.",
+          "required": true
+        },
+        "STORAGE_BUCKET_NAME": {
+          "defaultValue": "${{Bucket.BUCKET}}",
+          "description": "Bucket name.",
+          "required": true
+        },
+        "STORAGE_ACCESS_KEY_ID": {
+          "defaultValue": "${{Bucket.ACCESS_KEY_ID}}",
+          "description": "Bucket access key.",
+          "required": true
+        },
+        "STORAGE_SECRET_ACCESS_KEY": {
+          "defaultValue": "${{Bucket.SECRET_ACCESS_KEY}}",
+          "description": "Bucket secret key.",
+          "required": true
+        },
+        "STORAGE_REGION": {
+          "defaultValue": "${{Bucket.REGION}}",
+          "description": "Bucket region.",
+          "required": true
+        },
+        "STORAGE_ENDPOINT": {
+          "defaultValue": "${{Bucket.ENDPOINT}}",
+          "description": "Bucket S3 endpoint.",
+          "required": true
+        },
+        "STORAGE_FORCE_PATH_STYLE": {
+          "defaultValue": "false",
+          "description": "Railway Buckets use virtual-hosted URLs (set true only for old path-style buckets).",
+          "required": false
+        },
+        "LOG_LEVEL": {
+          "defaultValue": "info",
+          "description": "Rails log level.",
+          "required": false
+        },
+        "SECRET_KEY_BASE": {
+          "defaultValue": "${{secret(128, \"abcdef0123456789\")}}",
+          "description": "Rails secret (signed cookies, tokens). Shared with Sidekiq. Never change after first boot.",
+          "required": true
+        },
+        "ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY": {
+          "defaultValue": "${{secret(32, \"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789\")}}",
+          "description": "Active Record encryption key (MFA, encrypted columns). Never change.",
+          "required": true
+        },
+        "ACTIVE_RECORD_ENCRYPTION_DETERMINISTIC_KEY": {
+          "defaultValue": "${{secret(32, \"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789\")}}",
+          "description": "Active Record deterministic encryption key. Never change.",
+          "required": true
+        },
+        "ACTIVE_RECORD_ENCRYPTION_KEY_DERIVATION_SALT": {
+          "defaultValue": "${{secret(32, \"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789\")}}",
+          "description": "Active Record key derivation salt. Never change.",
+          "required": true
+        },
+        "FRONTEND_URL": {
+          "defaultValue": "https://${{RAILWAY_PUBLIC_DOMAIN}}",
+          "description": "Public URL (links in emails, widget script). Update for a custom domain.",
+          "required": true
+        },
+        "MAILER_SENDER_EMAIL": {
+          "defaultValue": "Chatwoot <noreply@example.com>",
+          "description": "From address for outgoing email (needs SMTP, see docs).",
+          "required": false
+        },
+        "PORT": {
+          "defaultValue": "3000",
+          "description": "Puma port (domain + healthcheck).",
+          "required": false
+        },
+        "RAILS_MAX_THREADS": {
+          "defaultValue": "5",
+          "description": "Puma threads per process.",
+          "required": false
+        },
+        "WEB_CONCURRENCY": {
+          "defaultValue": "0",
+          "description": "Puma worker processes (0 = single process). Raise to 2 for busy installs.",
+          "required": false
+        },
+        "ENABLE_ACCOUNT_SIGNUP": {
+          "defaultValue": "false",
+          "description": "Public sign-up. Read once on first boot; afterwards change it in Super Admin > App Configs.",
+          "required": false
+        },
+        "FORCE_SSL": {
+          "defaultValue": "false",
+          "description": "Railway terminates TLS at its edge; keep false to avoid redirect loops.",
+          "required": false
+        },
+        "CAPTAIN_OPEN_AI_API_KEY": {
+          "defaultValue": "",
+          "description": "Optional. OpenAI key for Captain AI; copied into Super Admin config on deploy if not set there yet.",
+          "required": false
+        }
+      }
+    },
+    "chatwoot-sidekiq": {
+      "icon": "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/chatwoot.svg",
+      "source": {
+        "repo": "baranberkay96/chatwoot-railway",
+        "rootDirectory": "/services/chatwoot"
+      },
+      "startCommand": "/app/railway/sidekiq.sh",
+      "healthcheckPath": null,
+      "healthcheckTimeout": null,
+      "restartPolicyType": "ON_FAILURE",
+      "restartPolicyMaxRetries": 10,
+      "numReplicas": 1,
+      "publicDomain": false,
+      "targetPort": null,
+      "tcpProxy": null,
+      "volume": null,
+      "variables": {
+        "POSTGRES_HOST": {
+          "defaultValue": "${{Postgres.RAILWAY_PRIVATE_DOMAIN}}",
+          "description": "Postgres (pgvector) host, private network.",
+          "required": true
+        },
+        "POSTGRES_PORT": {
+          "defaultValue": "5432",
+          "description": "Postgres port.",
+          "required": false
+        },
+        "POSTGRES_USERNAME": {
+          "defaultValue": "${{Postgres.PGUSER}}",
+          "description": "Postgres user.",
+          "required": true
+        },
+        "POSTGRES_PASSWORD": {
+          "defaultValue": "${{Postgres.PGPASSWORD}}",
+          "description": "Postgres password.",
+          "required": true
+        },
+        "POSTGRES_DATABASE": {
+          "defaultValue": "${{Postgres.PGDATABASE}}",
+          "description": "Chatwoot database.",
+          "required": true
+        },
+        "REDIS_URL": {
+          "defaultValue": "${{Redis.REDIS_URL}}",
+          "description": "Redis for Sidekiq queues, Action Cable and caching.",
+          "required": true
+        },
+        "ACTIVE_STORAGE_SERVICE": {
+          "defaultValue": "s3_compatible",
+          "description": "Attachments/avatars in the Railway Bucket so web and Sidekiq see the same files.",
+          "required": true
+        },
+        "STORAGE_BUCKET_NAME": {
+          "defaultValue": "${{Bucket.BUCKET}}",
+          "description": "Bucket name.",
+          "required": true
+        },
+        "STORAGE_ACCESS_KEY_ID": {
+          "defaultValue": "${{Bucket.ACCESS_KEY_ID}}",
+          "description": "Bucket access key.",
+          "required": true
+        },
+        "STORAGE_SECRET_ACCESS_KEY": {
+          "defaultValue": "${{Bucket.SECRET_ACCESS_KEY}}",
+          "description": "Bucket secret key.",
+          "required": true
+        },
+        "STORAGE_REGION": {
+          "defaultValue": "${{Bucket.REGION}}",
+          "description": "Bucket region.",
+          "required": true
+        },
+        "STORAGE_ENDPOINT": {
+          "defaultValue": "${{Bucket.ENDPOINT}}",
+          "description": "Bucket S3 endpoint.",
+          "required": true
+        },
+        "STORAGE_FORCE_PATH_STYLE": {
+          "defaultValue": "false",
+          "description": "Railway Buckets use virtual-hosted URLs (set true only for old path-style buckets).",
+          "required": false
+        },
+        "LOG_LEVEL": {
+          "defaultValue": "info",
+          "description": "Rails log level.",
+          "required": false
+        },
+        "SECRET_KEY_BASE": {
+          "defaultValue": "${{chatwoot.SECRET_KEY_BASE}}",
+          "description": "Same value as on chatwoot.",
+          "required": true
+        },
+        "ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY": {
+          "defaultValue": "${{chatwoot.ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY}}",
+          "description": "Same value as on chatwoot.",
+          "required": true
+        },
+        "ACTIVE_RECORD_ENCRYPTION_DETERMINISTIC_KEY": {
+          "defaultValue": "${{chatwoot.ACTIVE_RECORD_ENCRYPTION_DETERMINISTIC_KEY}}",
+          "description": "Same value as on chatwoot.",
+          "required": true
+        },
+        "ACTIVE_RECORD_ENCRYPTION_KEY_DERIVATION_SALT": {
+          "defaultValue": "${{chatwoot.ACTIVE_RECORD_ENCRYPTION_KEY_DERIVATION_SALT}}",
+          "description": "Same value as on chatwoot.",
+          "required": true
+        },
+        "FRONTEND_URL": {
+          "defaultValue": "${{chatwoot.FRONTEND_URL}}",
+          "description": "Same value as on chatwoot.",
+          "required": true
+        },
+        "MAILER_SENDER_EMAIL": {
+          "defaultValue": "${{chatwoot.MAILER_SENDER_EMAIL}}",
+          "description": "Same value as on chatwoot.",
+          "required": false
+        },
+        "SIDEKIQ_CONCURRENCY": {
+          "defaultValue": "10",
+          "description": "Sidekiq threads per replica (also the DB pool size).",
+          "required": false
+        },
+        "RAILWAY_DEPLOYMENT_DRAINING_SECONDS": {
+          "defaultValue": "60",
+          "description": "Time running jobs get to finish on redeploy.",
+          "required": false
+        }
+      }
+    },
+    "Postgres": {
+      "icon": "https://devicons.railway.app/i/postgresql.svg",
+      "source": {
+        "image": "pgvector/pgvector:0.8.7-pg16"
+      },
+      "startCommand": null,
+      "healthcheckPath": null,
+      "healthcheckTimeout": null,
+      "restartPolicyType": "ON_FAILURE",
+      "restartPolicyMaxRetries": 10,
+      "publicDomain": false,
+      "targetPort": null,
+      "tcpProxy": null,
+      "volume": {
+        "mountPath": "/var/lib/postgresql/data"
+      },
+      "variables": {
+        "PGDATA": {
+          "defaultValue": "/var/lib/postgresql/data/pgdata",
+          "description": "Location where the database will be initialized",
+          "required": true
+        },
+        "PGHOST": {
+          "defaultValue": "${{RAILWAY_PRIVATE_DOMAIN}}",
+          "description": "Railway Private Domain Name.",
+          "required": true
+        },
+        "PGPORT": {
+          "defaultValue": "5432",
+          "description": "Port to connect to Postgres.",
+          "required": true
+        },
+        "PGUSER": {
+          "defaultValue": "${{ POSTGRES_USER }}",
+          "description": "Required variable for Data panel",
+          "required": true
+        },
+        "PGDATABASE": {
+          "defaultValue": "${{POSTGRES_DB}}",
+          "description": "Required variable for the data panel.",
+          "required": true
+        },
+        "PGPASSWORD": {
+          "defaultValue": "${{POSTGRES_PASSWORD}}",
+          "description": "Required variable for Data panel",
+          "required": true
+        },
+        "POSTGRES_DB": {
+          "defaultValue": "railway",
+          "description": "Default database created when image is started.",
+          "required": true
+        },
+        "DATABASE_URL": {
+          "defaultValue": "postgresql://${{PGUSER}}:${{POSTGRES_PASSWORD}}@${{RAILWAY_PRIVATE_DOMAIN}}:5432/${{PGDATABASE}}",
+          "description": "URL to connect to Postgres (private network, no TLS).",
+          "required": true
+        },
+        "POSTGRES_USER": {
+          "defaultValue": "postgres",
+          "description": "User to connect to Postgres DB",
+          "required": true
+        },
+        "POSTGRES_PASSWORD": {
+          "defaultValue": "${{ secret(32, \"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ\") }}",
+          "description": "Password to connect to DB",
+          "required": true
+        },
+        "RAILWAY_DEPLOYMENT_DRAINING_SECONDS": {
+          "defaultValue": "60",
+          "description": "Allow Postgres to cleanly shut down",
+          "required": true
+        }
+      }
+    },
+    "Redis": {
+      "icon": "https://cdn.sanity.io/images/sy1jschh/production/0ce0bfdcfbdbf69662b1116671f97c2dd788b655-157x157.svg",
+      "source": {
+        "image": "redis:8.2"
+      },
+      "startCommand": "/bin/sh -c \"rm -rf $RAILWAY_VOLUME_MOUNT_PATH/lost+found/ && exec docker-entrypoint.sh redis-server --requirepass $REDIS_PASSWORD --save 60 1 --dir $RAILWAY_VOLUME_MOUNT_PATH\"",
+      "healthcheckPath": null,
+      "healthcheckTimeout": null,
+      "restartPolicyType": "ON_FAILURE",
+      "restartPolicyMaxRetries": 10,
+      "publicDomain": false,
+      "targetPort": null,
+      "tcpProxy": null,
+      "volume": {
+        "mountPath": "/data"
+      },
+      "variables": {
+        "REDISHOST": {
+          "defaultValue": "${{RAILWAY_PRIVATE_DOMAIN}}",
+          "description": "Private network hostname of the Redis service, only resolvable from services in the same environment",
+          "required": true
+        },
+        "REDISPORT": {
+          "defaultValue": "6379",
+          "description": "Port that Redis listens on",
+          "required": true
+        },
+        "REDISUSER": {
+          "defaultValue": "default",
+          "description": "Username for authenticating with Redis",
+          "required": true
+        },
+        "REDIS_URL": {
+          "defaultValue": "redis://${{ REDISUSER }}:${{ REDIS_PASSWORD }}@${{ REDISHOST }}:${{ REDISPORT }}",
+          "description": "Connection string for connecting to Redis using the private network",
+          "required": true
+        },
+        "REDISPASSWORD": {
+          "defaultValue": "${{REDIS_PASSWORD}}",
+          "description": "Alias of REDIS_PASSWORD for clients that expect the unseparated name",
+          "required": true
+        },
+        "REDIS_PASSWORD": {
+          "defaultValue": "${{ secret(32, \"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ\") }}",
+          "description": "Randomly generated password for authenticating with Redis",
+          "required": true
+        }
+      }
+    }
+  },
+  "buckets": [
+    "Bucket"
+  ]
+}
