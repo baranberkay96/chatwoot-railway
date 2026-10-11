@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | Listing name | **Chatwoot v4 Omnichannel Support Desk** (version label `v4` = Chatwoot major; tags are `v4.18.0`) |
-| Description | Live chat, email, WhatsApp Cloud API and social inbox with AI assist and workers. (81 chars, unchanged — see caveats under Open questions) |
+| Description | Live chat, email, WhatsApp Cloud API and social inbox with AI assist. (81 chars, unchanged — see caveats under Open questions) |
 | Category | Automation |
 | Tags | chatwoot, customer-support, live-chat, helpdesk, omnichannel, intercom-alternative |
 | Base market template | `chatwoot` (Railway's own, 5,852 projects: prebuilt `ghcr.io/railwayapp-templates/chatwoot:Community` image, pgvector pg16, Valkey, local volume). Kept: pgvector Postgres, Redis-compatible store, `/api` health. Changed: official upstream image pinned, separate Sidekiq service, Bucket storage. Also reviewed `self-host-chatwoot` (web + Sidekiq with **separate** volumes, so Sidekiq cannot see uploads) and `chatwoot-1` (Amritasha repo, no license → nothing copied). |
